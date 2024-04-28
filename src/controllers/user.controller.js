@@ -305,7 +305,7 @@ const logoutUser = asyncHandler( async(req,res) => {
     throw new ApiError(400, "Error while uploading coverImage")
   }
 
-  const user = User.findByIdAndUpdate(
+  const user =await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set:{

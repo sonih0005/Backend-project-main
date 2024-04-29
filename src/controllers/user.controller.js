@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import {User} from "../models/user.models.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
@@ -92,7 +92,8 @@ const registerUser = asyncHandler( async (req,res)=> {
     email,
     password
   })
-  console.log(user)
+  // console.log(user)
+  console.log(user.avatar)
 
  const createdUser = await User.findById(user._id).select(
     "-password -refreshToken", 
@@ -264,10 +265,21 @@ const logoutUser = asyncHandler( async(req,res) => {
  })
 
  const updateUserAvatar = asyncHandler(async(req,res)=> {
+  const userId = req.user?._id;
   const avatarLocalPath = req.file?.path;
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is missing")
+  }
+
+  const result = await User.findById(userId);
+  if (!result) {
+    throw new ApiError(404, "user not found")
+  }
+
+  const deleteAvatarFile = await deleteFromCloudinary([result.avatarPublicId]);
+  if (!deleteAvatarFile) {
+    throw new  ApiError(500, "Error while deleting avatar file from cloudinary")
   }
 
   const avatar =  await uploadOnCloudinary(avatarLocalPath)
@@ -288,17 +300,33 @@ const logoutUser = asyncHandler( async(req,res) => {
     }
   ).select("-password")
 
+  console.log("update Avatar", user.avatar)
+
+
+
   return res.status(200)
   .json(new ApiResponse(200, user, "Avatar is uploaded successfully"))
  })
 
  const updateUserCoverImage = asyncHandler(async(req,res)=> {
   const coverImageLocalPath = req.file?.path;
+  const userId = req.user?._id;
+
 
   if(!coverImageLocalPath){
     throw new ApiError(400, "coverImage file is missing")
   }
 
+  const result = await User.findById(userId);
+
+  if(!result){
+    throw new ApiError(404, "User not found")
+  }
+
+  const deleteCoverImage = await deleteFromCloudinary([result.coverImagePublicId])
+  if (!deleteCoverImage) {
+    throw new ApiError(500, "Error while deleting cover image from cloudinary")
+  }
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!coverImage.url) {
@@ -327,6 +355,7 @@ export  {
   refreshAccessToken,
   changeCurrentPassword,
   getCurrentUser,
+  updateAccountDetails,
   updateUserAvatar,
   updateUserCoverImage
 }

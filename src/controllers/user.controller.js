@@ -375,7 +375,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "subscriptions",
+        from: "subscriptions", //bcoz mongo db set name to plural and convert it to lowercase
         localField: "_id",
         foreignField: "channels",
         as: "subscribers",
@@ -398,7 +398,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
           $size: "$subscribedTo",
         },
         isSubscribed: {
-          $condition: {
+          $cond: {
             if: { $in: [req.user?._id, "$subscribers.subscribe"] },
             then: true,
             else: false,

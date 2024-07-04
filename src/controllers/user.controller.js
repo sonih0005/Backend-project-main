@@ -290,8 +290,9 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   if (!result) {
     throw new ApiError(404, "user not found");
   }
+  console.log('this is avatar img:-',result.avatar)
 
-  const deleteAvatarFile = await deleteFromCloudinary([result.avatarPublicId]);
+  const deleteAvatarFile = await deleteFromCloudinary([result.avatar]);
   if (!deleteAvatarFile) {
     throw new ApiError(500, "Error while deleting avatar file from cloudinary");
   }

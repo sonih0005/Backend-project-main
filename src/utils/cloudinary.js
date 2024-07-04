@@ -27,19 +27,28 @@ const uploadOnCloudinary = async (localFilePath) => {
 }
 
 const deleteFromCloudinary = async (publicIds)=>{
-    try {
-        if(!publicIds) return null;
-        const deleteImage = await cloudinary.api.delete_resources(
-            publicIds,
-            {
-                resource_type: "auto",
-                type: "upload"
-            }
-        )
+    // try {
+    //     if(!publicIds) return null;
+    //     const deleteImage = await cloudinary.api.delete_resources(
+    //         publicIds,
+    //         {
+    //             resource_type: "auto",
+    //             type: "upload"
+    //         }
+    //     )
 
+    // } catch (error) {
+    //     console.log("Error while deleting from cloudinary", error);
+    //     return null
+    // }
+    try {
+        cloudinary.uploader
+        .destroy(publicIds)
+        .then((result) => console.log(result))
+        .catch((err) => console.log(err))
     } catch (error) {
         console.log("Error while deleting from cloudinary", error);
-        return null
+        return null;
     }
 }
 
